@@ -27,17 +27,17 @@ logging.level:
 springdoc:
   version: '2.0.4'
   api-docs:
-    path: /api-docs # API ??? ??? ??
+    path: /api-docs # API 문서가 저장될 경로
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
 
-  swagger-ui: # Swagger UI ?? ? ??
-    operations-sorter: alpha # ???? ??
+  swagger-ui: # Swagger UI 외관 및 동작
+    operations-sorter: alpha # 알파벳순 정렬
     tags-sorter: alpha
-    path: /swagger-ui.html # Swagger UI? ???? ? ?? ??
-    disable-swagger-default-url: true # ??? ?? /swagger-ui.html ?? ??
-    display-query-params-without-oauth2: true # swagger ui ??? OQUTH2 ??, ?? ???? ??
-    doc-expansion: none #  Swagger UI?? ?? ?? ????
+    path: /swagger-ui.html # Swagger UI에 엑세스할 경로 설정
+    disable-swagger-default-url: true # 명시적 경로 /swagger-ui.html 로만 접근
+    display-query-params-without-oauth2: true # swagger ui에서 OQUTH2없이, 쿼리 파라미터 표시
+    doc-expansion: none #  Swagger UI에서 문서 확장 비활성화
 
-  paths-to-match: # API ???? ??? ?? ?? ??.
+  paths-to-match: # API 문서화에 포함될 경로 패턴 설정 !!
     - /api/**

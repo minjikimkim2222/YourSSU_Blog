@@ -19,10 +19,9 @@ public class UserService {
 
     public Response registerUser(Request request){
         // 이메일 중복 체크
-        userRepository.findByEmail(request.getEmail())
-                .ifPresent(user -> {
-                    throw new IllegalStateException("이미 존재하는 아이디입니다");
-                });
+        if (isEmailDuplicated(request.getEmail())){
+            throw new IllegalStateException("이미 존재하는 이메일입니다");
+        }
 
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(request.getPassword());
@@ -32,5 +31,9 @@ public class UserService {
         registerUser = userRepository.save(registerUser);
 
         return UserConverter.toResponse(registerUser);
+    }
+
+    private boolean isEmailDuplicated(String email){
+        return userRepository.findByEmail(email).isPresent();
     }
 }
