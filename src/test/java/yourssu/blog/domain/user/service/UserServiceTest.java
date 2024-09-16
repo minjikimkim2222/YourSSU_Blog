@@ -14,6 +14,8 @@ import yourssu.blog.domain.user.controller.dto.Response;
 import yourssu.blog.domain.user.model.User;
 import yourssu.blog.domain.user.service.port.UserRepository;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.*;
@@ -38,10 +40,11 @@ class UserServiceTest {
         final String encodedPw = encoder.encode(plainPw);
         final Request request = new Request("email@example.com", plainPw, "username");
 
-        // when
-          // 테스트 시나리오 -- UserRepository가 save할 때,
-          // 어떤 User 객체가 인자로 전달되든 상관없이, 이 메서드는 항상 지정된, user 객체 반환
+        // 테스트 시나리오 -- UserRepository가 save할 때,
+        // 어떤 User 객체가 인자로 전달되든 상관없이, 이 메서드는 항상 지정된, user 객체 반환
         doReturn(new User(null, request.getEmail(), encodedPw, request.getUsername())).when(userRepository).save(any(User.class));
+
+        // when
         final Response response = userService.registerUser(request);
 
         // then
@@ -58,14 +61,27 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("이메일 중복 시, 에러가 발생하는지 확인하는 테스트")
-    public void registerUser() throws Exception {
+    @DisplayName("이메일 중복 시, 예외 발생 테스트")
+    public void isEmailDuplicated() throws Exception {
         // given
+        final String duplicatedEmail = "exist@example.com";
+        final Request request = new Request(duplicatedEmail, "plainPw", "username");
 
+        // -- userRepository의 findByEmail 호출 시, 이미 존재하는 이메일 유저 반환하게끔 설정
+        doReturn(Optional.of(new User(null, duplicatedEmail, "plainPw2", "username2")))
+                .when(userRepository).findByEmail(duplicatedEmail);
 
-        // when
+        // when & then
+        // -- userService의 registerUser 실행 시, IllegalStateException 발생하는지 테스트
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            userService.registerUser(request);
+        });
 
-        // then
+        assertThat(exception.getMessage()).isEqualTo("이미 존재하는 이메일입니다");
+
+        // verify
+        verify(userRepository, times(1)).findByEmail(any(String.class));
+        verify(userRepository, never()).save(any(User.class)); // 예외 발생으로, save 로직에 도달하지 않음
 
     }
 
