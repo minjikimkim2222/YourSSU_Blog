@@ -1,12 +1,11 @@
 package yourssu.blog.domain.user.controller.dto;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
-public class Request {
+@Builder
+public class UserCreateResponse {
     private String email;
-    private String password;
     private String username;
 }

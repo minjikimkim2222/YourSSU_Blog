@@ -1,7 +1,7 @@
 package yourssu.blog.domain.article.converter;
 
-import yourssu.blog.domain.article.controller.dto.Request;
-import yourssu.blog.domain.article.controller.dto.Response;
+import yourssu.blog.domain.article.controller.dto.ArticleCreateRequest;
+import yourssu.blog.domain.article.controller.dto.ArticleCreateResponse;
 import yourssu.blog.domain.article.jpa.ArticleEntity;
 import yourssu.blog.domain.article.model.Article;
 import yourssu.blog.domain.user.converter.UserConverter;
@@ -26,16 +26,16 @@ public class ArticleConverter {
                 .build();
     }
 
-    public static Article toArticle(Request request, User userByEmail){
+    public static Article toArticle(ArticleCreateRequest articleCreateRequest, User userByEmail){
         return Article.builder()
-                .content(request.getContent())
-                .title(request.getTitle())
+                .content(articleCreateRequest.getContent())
+                .title(articleCreateRequest.getTitle())
                 .user(userByEmail)
                 .build();
     }
 
-    public static Response toResponse(Article article){
-        return Response.builder()
+    public static ArticleCreateResponse toResponse(Article article){
+        return ArticleCreateResponse.builder()
                 .articleId(article.getId())
                 .email(article.getUser().getEmail())
                 .title(article.getTitle())

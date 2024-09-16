@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class Response {
+public class ArticleCreateResponse {
     private Long articleId;
     private String email; // 해당 Article을 작성한 User 이메일
     private String title;

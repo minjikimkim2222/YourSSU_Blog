@@ -1,7 +1,8 @@
 package yourssu.blog.domain.user.converter;
 
-import yourssu.blog.domain.user.controller.dto.Request;
-import yourssu.blog.domain.user.controller.dto.Response;
+
+import yourssu.blog.domain.user.controller.dto.UserCreateRequest;
+import yourssu.blog.domain.user.controller.dto.UserCreateResponse;
 import yourssu.blog.domain.user.jpa.UserEntity;
 import yourssu.blog.domain.user.model.User;
 
@@ -24,7 +25,7 @@ public class UserConverter {
                 .build();
     }
 
-    public static User toUser(Request userRequest){
+    public static User toUser(UserCreateRequest userRequest){
         return User.builder()
                 .email(userRequest.getEmail())
                 .password(userRequest.getPassword())
@@ -32,8 +33,8 @@ public class UserConverter {
                 .build();
     }
 
-    public static Response toResponse(User user){
-        return Response.builder()
+    public static UserCreateResponse toResponse(User user){
+        return UserCreateResponse.builder()
                 .email(user.getEmail())
                 .username(user.getUsername())
                 .build();

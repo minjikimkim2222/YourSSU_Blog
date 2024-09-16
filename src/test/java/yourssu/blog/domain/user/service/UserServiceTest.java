@@ -8,9 +8,8 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import yourssu.blog.domain.user.controller.dto.Request;
-import yourssu.blog.domain.user.controller.dto.Response;
+import yourssu.blog.domain.user.controller.dto.UserCreateRequest;
+import yourssu.blog.domain.user.controller.dto.UserCreateResponse;
 import yourssu.blog.domain.user.model.User;
 import yourssu.blog.domain.user.service.port.UserRepository;
 
@@ -38,14 +37,14 @@ class UserServiceTest {
         // given
         final String plainPw = "plainPw";
         final String encodedPw = encoder.encode(plainPw);
-        final Request request = new Request("email@example.com", plainPw, "username");
+        final UserCreateRequest request = new UserCreateRequest("email@example.com", plainPw, "username");
 
         // 테스트 시나리오 -- UserRepository가 save할 때,
         // 어떤 User 객체가 인자로 전달되든 상관없이, 이 메서드는 항상 지정된, user 객체 반환
         doReturn(new User(null, request.getEmail(), encodedPw, request.getUsername())).when(userRepository).save(any(User.class));
 
         // when
-        final Response response = userService.registerUser(request);
+        final UserCreateResponse response = userService.registerUser(request);
 
         // then
         assertThat(response.getEmail()).isEqualTo(request.getEmail());
@@ -65,7 +64,7 @@ class UserServiceTest {
     public void isEmailDuplicated() throws Exception {
         // given
         final String duplicatedEmail = "exist@example.com";
-        final Request request = new Request(duplicatedEmail, "plainPw", "username");
+        final UserCreateRequest request = new UserCreateRequest(duplicatedEmail, "plainPw", "username");
 
         // -- userRepository의 findByEmail 호출 시, 이미 존재하는 이메일 유저 반환하게끔 설정
         doReturn(Optional.of(new User(null, duplicatedEmail, "plainPw2", "username2")))

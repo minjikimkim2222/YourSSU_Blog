@@ -9,7 +9,7 @@ import lombok.Data;
  */
 @Data
 @AllArgsConstructor
-public class Request {
+public class ArticleCreateRequest {
     private String email; // 유저의 이메일 -- unique로 식별
     private String password;
 

@@ -19,6 +19,7 @@ import yourssu.blog.global.handler.ErrorResponse;
 public class GlobalExceptionHandler {
 
 
+    // 부적절한 때에 메서드가 불려간 것
     @ExceptionHandler(IllegalStateException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleIllegalStatusException(IllegalStateException ex, HttpServletRequest request){
@@ -27,7 +28,7 @@ public class GlobalExceptionHandler {
         return new ErrorResponse("CONFLICT", ex.getMessage(), request.getRequestURI());
     }
 
-    // @Valid에서 검증 실패하면, 발생하는 에러
+    // @Valid에서 검증 실패하면, 발생하는 에러 + 인자를 잘못 넘긴 경우
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException ex, HttpServletRequest request){
@@ -35,6 +36,15 @@ public class GlobalExceptionHandler {
 
         return new ErrorResponse("METHOD_ARGUMENT_NOT_VALID", "입력값이 잘못되었습니다.",  request.getRequestURI());
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleIllegalArgumentExceptionException(IllegalArgumentException ex, HttpServletRequest request){
+        log.error("[exceptionHandler] Exception :: ", ex);
+
+        return new ErrorResponse("METHOD_ARGUMENT_NOT_VALID", ex.getMessage(),  request.getRequestURI());
+    }
+
 
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
