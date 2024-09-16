@@ -1,0 +1,43 @@
+# spring.application.name=blog
+spring:
+  application:
+    name: blog
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      dialect: org.hibernate.dialect.MySQLDialect
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+
+  datasource:
+    url: jdbc:mysql://localhost:3307/blogDB
+    username: root
+    password: root1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+logging.level:
+  org.hibernate.sql: debug
+  org.hibernate.type: trace
+
+springdoc:
+  version: '2.0.4'
+  api-docs:
+    path: /api-docs # API ??? ??? ??
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+
+  swagger-ui: # Swagger UI ?? ? ??
+    operations-sorter: alpha # ???? ??
+    tags-sorter: alpha
+    path: /swagger-ui.html # Swagger UI? ???? ? ?? ??
+    disable-swagger-default-url: true # ??? ?? /swagger-ui.html ?? ??
+    display-query-params-without-oauth2: true # swagger ui ??? OQUTH2 ??, ?? ???? ??
+    doc-expansion: none #  Swagger UI?? ?? ?? ????
+
+  paths-to-match: # API ???? ??? ?? ?? ??.
+    - /api/**
