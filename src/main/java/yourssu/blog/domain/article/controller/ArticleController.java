@@ -18,7 +18,6 @@ import yourssu.blog.domain.article.service.ArticleService;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/articles")
-@Slf4j
 public class ArticleController {
     private final ArticleService articleService;
 
@@ -54,4 +53,12 @@ public class ArticleController {
 
         return ResponseEntity.status(HttpStatus.OK).body(articleUpdateResponse);
     }
+
+//    @Operation(
+//            summary = "게시글 삭제 API",
+//            description = """
+//                    """
+//    )
+//    @DeleteMapping("/{articleId}")
+
 }

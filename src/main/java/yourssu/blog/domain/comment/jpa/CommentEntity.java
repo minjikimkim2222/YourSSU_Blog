@@ -24,9 +24,9 @@ public class CommentEntity extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "article_id")
-    private ArticleEntity articleEntity;
+    private ArticleEntity articleEntity; // 어떤 게시글에 (댓글이) 달렸는지
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private UserEntity userEntity;
+    private UserEntity userEntity; // 어떤 유저가 (댓글을) 달았는지
 }

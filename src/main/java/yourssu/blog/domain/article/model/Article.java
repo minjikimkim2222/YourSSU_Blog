@@ -14,7 +14,7 @@ public class Article {
     private final User user;
 
     @Builder
-    public Article(Long id, String content, String title, User user, LocalDateTime updatedAt){
+    public Article(Long id, String content, String title, User user){
         this.id = id;
         this.content = content;
         this.title = title;

@@ -17,21 +17,20 @@ import yourssu.blog.domain.user.model.User;
 import yourssu.blog.domain.user.service.port.UserRepository;
 import yourssu.blog.global.exception.ResourceNotFoundException;
 import yourssu.blog.global.exception.UnauthorizedAccessException;
+import yourssu.blog.global.service.UserVerifier;
 
 import java.nio.file.AccessDeniedException;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
-@Slf4j
 public class ArticleService {
     private final ArticleRepository articleRepository;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder; // 비밀번호 비교를 위해 추가
+    private final UserVerifier userVerifier;
 
     public ArticleCreateResponse createArticle(ArticleCreateRequest articleCreateRequest){
 
-        User userByEmail = verifyUserAndPassword(articleCreateRequest.getEmail(), articleCreateRequest.getPassword());
+        User userByEmail = userVerifier.verifyUserAndPassword(articleCreateRequest.getEmail(), articleCreateRequest.getPassword());
 
         Article savedArticle = articleRepository.save(ArticleConverter.toArticle(articleCreateRequest, userByEmail));
 
@@ -44,7 +43,7 @@ public class ArticleService {
         Article foundArticle = articleRepository.findById(articleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Article", articleId));
 
-        User userByEmail = verifyUserAndPassword(articleUpdateRequest.getEmail(), articleUpdateRequest.getPassword());
+        User userByEmail = userVerifier.verifyUserAndPassword(articleUpdateRequest.getEmail(), articleUpdateRequest.getPassword());
 
         // 자신의 게시글인지 확인
         if (!foundArticle.getUser().getId().equals(userByEmail.getId())){
@@ -60,18 +59,5 @@ public class ArticleService {
 
     }
 
-    // 해당 email을 가진 User가 존재하는지, User가 존재한다면 비밀번호가 일치하는지 검사
-    private User verifyUserAndPassword(String email, String password){
-        // 유저 존재 여부 확인
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("해당 email을 가진 User가 존재하지 않습니다."));
-
-        // 비밀번호 일치 여부 확인
-        if (!passwordEncoder.matches(password, user.getPassword())){
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
-
-        return user;
-    }
 
 }

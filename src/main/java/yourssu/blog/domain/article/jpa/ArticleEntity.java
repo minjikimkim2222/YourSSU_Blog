@@ -26,6 +26,6 @@ public class ArticleEntity extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private UserEntity userEntity;
+    private UserEntity userEntity; // 어떤 유저가 (해당 게시글)을 썼는지
 
 }
