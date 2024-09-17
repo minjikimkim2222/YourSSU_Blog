@@ -3,6 +3,7 @@ package yourssu.blog.global.handler.advice;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -65,6 +66,15 @@ public class GlobalExceptionHandler {
         log.error("[exceptionHandler] Exception :: ", ex);
 
         return new ErrorResponse("FORBIDDEN", ex.getMessage(), request.getRequestURI());
+    }
+
+    // 지원하지 않는 HTTP method 호출할 경우 발생
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    public ErrorResponse handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex, HttpServletRequest request){
+        log.error("[exceptionHandler] Exception :: ", ex);
+
+        return new ErrorResponse("METHOD_NOT_ALLOWED", "지원하지 않는 HTTP method를 호출했습니다.", request.getRequestURI());
     }
 
     // 마지막으로, 실수로 놓친 예외들은 여기서 공통으로 500에러로 처리됨
