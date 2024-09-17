@@ -1,14 +1,12 @@
 package yourssu.blog.domain.comment.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yourssu.blog.domain.article.model.Article;
 import yourssu.blog.domain.article.service.port.ArticleRepository;
-import yourssu.blog.domain.comment.controller.dto.CommentCreateRequest;
-import yourssu.blog.domain.comment.controller.dto.CommentCreateResponse;
-import yourssu.blog.domain.comment.controller.dto.CommentUpdateRequest;
-import yourssu.blog.domain.comment.controller.dto.CommentUpdateResponse;
+import yourssu.blog.domain.comment.controller.dto.*;
 import yourssu.blog.domain.comment.converter.CommentConverter;
 import yourssu.blog.domain.comment.model.Comment;
 import yourssu.blog.domain.comment.service.port.CommentRepository;
@@ -41,8 +39,7 @@ public class CommentService {
 
     public CommentUpdateResponse updateComment(Long commentId, CommentUpdateRequest commentUpdateRequest){
         // 댓글 존재 여부 확인 (pathVariable -- commentId)
-        Comment foundComment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comment", commentId));
+        Comment foundComment = getComment(commentId);
 
         // request로부터 받은 유저 검증 후, 리턴
         User userByEmail = userVerifier.verifyUserAndPassword(commentUpdateRequest.getEmail(), commentUpdateRequest.getPassword());
@@ -58,6 +55,24 @@ public class CommentService {
         commentRepository.save(foundComment);
 
         return CommentConverter.toUpdateResponse(foundComment);
+    }
+
+    public void deleteComment(Long commentId, CommentDeleteRequest commentDeleteRequest){
+        Comment foundComment = getComment(commentId);
+        User userByEmail = userVerifier.verifyUserAndPassword(commentDeleteRequest.getEmail(), commentDeleteRequest.getPassword());
+
+        // 자신의 댓글만 삭제 가능
+        if (!foundComment.getUser().getId().equals(userByEmail.getId())){
+            throw new UnauthorizedAccessException("자신의 댓글만 삭제할 수 있습니다.");
+        }
+
+        // 댓글 삭제
+        commentRepository.deleteById(commentId);
+    }
+
+    private Comment getComment(Long commentId){
+        return commentRepository.findById(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comment", commentId));
     }
 
 }

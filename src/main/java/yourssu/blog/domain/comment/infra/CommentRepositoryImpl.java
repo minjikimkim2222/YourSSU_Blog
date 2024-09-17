@@ -20,10 +20,13 @@ public class CommentRepositoryImpl implements CommentRepository {
 
         return CommentConverter.toComment(commentEntity);
     }
-
     @Override
     public Optional<Comment> findById(Long id) {
         return commentJpaRepository.findById(id)
                 .map(commentEntity -> CommentConverter.toComment(commentEntity));
+    }
+    @Override
+    public void deleteById(Long id) {
+        commentJpaRepository.deleteById(id);
     }
 }

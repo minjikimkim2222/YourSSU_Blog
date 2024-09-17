@@ -7,10 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import yourssu.blog.domain.comment.controller.dto.CommentCreateRequest;
-import yourssu.blog.domain.comment.controller.dto.CommentCreateResponse;
-import yourssu.blog.domain.comment.controller.dto.CommentUpdateRequest;
-import yourssu.blog.domain.comment.controller.dto.CommentUpdateResponse;
+import yourssu.blog.domain.comment.controller.dto.*;
 import yourssu.blog.domain.comment.service.CommentService;
 
 @Tag(name = "CommentApiController", description = "댓글 Api 서비스 컨트롤러")
@@ -55,5 +52,20 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.OK).body(commentUpdateResponse);
     }
 
+    @Operation(
+            summary = "댓글 삭제 API",
+            description = """
+                    - commentId를 쿼리 파라미터로 받습니다.
+                    - 자신의 댓글만 삭제할 수 있습니다.
+                    """
+    )
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity deleteComment(
+            @PathVariable Long commentId,
+            @RequestBody CommentDeleteRequest commentDeleteRequest
+            ){
+        commentService.deleteComment(commentId, commentDeleteRequest);
 
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 }
