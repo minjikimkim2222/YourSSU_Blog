@@ -43,4 +43,10 @@ public class CommentRepositoryImpl implements CommentRepository {
     public void delete(Comment comment) {
         commentJpaRepository.delete(CommentConverter.toEntity(comment));
     }
+    @Override
+    public List<Comment> findByUserId(Long userId) {
+        return commentJpaRepository.findByUserEntity_Id(userId)
+                .stream().map(commentEntity -> CommentConverter.toComment(commentEntity))
+                .collect(Collectors.toList());
+    }
 }

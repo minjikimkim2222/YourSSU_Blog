@@ -9,7 +9,9 @@ import yourssu.blog.domain.article.jpa.ArticleJpaRepository;
 import yourssu.blog.domain.article.model.Article;
 import yourssu.blog.domain.article.service.port.ArticleRepository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -31,5 +33,16 @@ public class ArticleRepositoryImpl implements ArticleRepository {
     @Override
     public void deleteById(Long id) {
         articleJpaRepository.deleteById(id);
+    }
+    @Override
+    public List<Article> findByUserId(Long userId) {
+        return articleJpaRepository.findByUserEntity_Id(userId)
+                .stream().map(articleEntity -> ArticleConverter.toArticle(articleEntity))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void delete(Article article) {
+        articleJpaRepository.delete(ArticleConverter.toEntity(article));
     }
 }

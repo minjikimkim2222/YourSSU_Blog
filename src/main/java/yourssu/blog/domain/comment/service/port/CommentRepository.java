@@ -10,6 +10,6 @@ public interface CommentRepository {
     Optional<Comment> findById(Long id);
     void deleteById(Long id);
     List<Comment> findByArticleId(Long articleId);
-
     void delete(Comment comment);
+    List<Comment> findByUserId(Long userId);
 }

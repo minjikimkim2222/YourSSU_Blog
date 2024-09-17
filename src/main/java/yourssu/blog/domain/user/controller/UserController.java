@@ -6,12 +6,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import yourssu.blog.domain.user.controller.dto.UserCreateRequest;
 import yourssu.blog.domain.user.controller.dto.UserCreateResponse;
+import yourssu.blog.domain.user.controller.dto.UserDeleteRequest;
 import yourssu.blog.domain.user.service.UserService;
 
 @Tag(name = "UserApiController", description = "사용자 Api 서비스 컨트롤러")
@@ -32,4 +30,16 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @Operation(
+            summary = "회원 탈퇴 API",
+            description = """
+                    - 회원 탈퇴 시, 해당 회원이 작성한 게시글, 댓글들이 모두 삭제됩니다.
+                    """
+    )
+    @DeleteMapping
+    public ResponseEntity deleteUser(@RequestBody UserDeleteRequest userDeleteRequest){
+        userService.deleteUser(userDeleteRequest);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 }

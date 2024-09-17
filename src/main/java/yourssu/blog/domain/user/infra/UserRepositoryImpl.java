@@ -25,4 +25,9 @@ public class UserRepositoryImpl implements UserRepository {
     public Optional<User> findByEmail(String email) {
         return userJpaRepository.findByEmail(email).map(UserConverter::toUser);
     }
+
+    @Override
+    public void delete(User user) {
+        userJpaRepository.delete(UserConverter.toEntity(user));
+    }
 }
