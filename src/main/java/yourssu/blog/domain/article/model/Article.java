@@ -2,9 +2,13 @@ package yourssu.blog.domain.article.model;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import yourssu.blog.domain.comment.model.Comment;
+import yourssu.blog.domain.comment.service.port.CommentRepository;
 import yourssu.blog.domain.user.model.User;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 public class Article {
@@ -30,5 +34,14 @@ public class Article {
                 .title(title)
                 .user(this.user)
                 .build();
+    }
+
+    // 게시글과 관련된 댓글이 존재할 때만, 삭제
+    public void deleteCommentsIfExist(CommentRepository commentRepository){
+        List<Comment> comments = commentRepository.findByArticleId(this.id);
+
+        if (!comments.isEmpty()){
+            comments.forEach(comment -> commentRepository.delete(comment));
+        }
     }
 }

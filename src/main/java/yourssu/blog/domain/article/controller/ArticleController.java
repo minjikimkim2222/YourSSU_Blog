@@ -8,10 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import yourssu.blog.domain.article.controller.dto.ArticleCreateRequest;
-import yourssu.blog.domain.article.controller.dto.ArticleCreateResponse;
-import yourssu.blog.domain.article.controller.dto.ArticleUpdateRequest;
-import yourssu.blog.domain.article.controller.dto.ArticleUpdateResponse;
+import yourssu.blog.domain.article.controller.dto.*;
 import yourssu.blog.domain.article.service.ArticleService;
 
 @Tag(name = "ArticleApiController", description = "게시글 Api 서비스 컨트롤러")
@@ -54,11 +51,22 @@ public class ArticleController {
         return ResponseEntity.status(HttpStatus.OK).body(articleUpdateResponse);
     }
 
-//    @Operation(
-//            summary = "게시글 삭제 API",
-//            description = """
-//                    """
-//    )
-//    @DeleteMapping("/{articleId}")
+    @Operation(
+            summary = "게시글 삭제 API",
+            description = """
+                    - articleId를 쿼리 파라미터로 받습니다.
+                    - 자신의 게시글만 삭제할 수 있습니다.
+                    - 해당 게시글에 있는 댓글들 모두 삭제됩니다.
+                    """
+    )
+    @DeleteMapping("/{articleId}")
+    public ResponseEntity deleteArticle(
+            @PathVariable Long articleId,
+            @RequestBody ArticleDeleteRequest articleDeleteRequest
+    ){
+        articleService.deleteArticle(articleId, articleDeleteRequest);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 
 }

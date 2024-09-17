@@ -5,14 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yourssu.blog.domain.article.controller.dto.ArticleCreateRequest;
-import yourssu.blog.domain.article.controller.dto.ArticleCreateResponse;
-import yourssu.blog.domain.article.controller.dto.ArticleUpdateRequest;
-import yourssu.blog.domain.article.controller.dto.ArticleUpdateResponse;
+import yourssu.blog.domain.article.controller.dto.*;
 import yourssu.blog.domain.article.converter.ArticleConverter;
 import yourssu.blog.domain.article.jpa.ArticleEntity;
 import yourssu.blog.domain.article.model.Article;
 import yourssu.blog.domain.article.service.port.ArticleRepository;
+import yourssu.blog.domain.comment.service.port.CommentRepository;
 import yourssu.blog.domain.user.model.User;
 import yourssu.blog.domain.user.service.port.UserRepository;
 import yourssu.blog.global.exception.ResourceNotFoundException;
@@ -26,6 +24,7 @@ import java.nio.file.AccessDeniedException;
 @RequiredArgsConstructor
 public class ArticleService {
     private final ArticleRepository articleRepository;
+    private final CommentRepository commentRepository;
     private final UserVerifier userVerifier;
 
     public ArticleCreateResponse createArticle(ArticleCreateRequest articleCreateRequest){
@@ -40,8 +39,7 @@ public class ArticleService {
     // 핵심은, 요청에서 받은 이메일과 비밀번호를 이용해 유저를 확인한 후, 그 유저가 해당 게시글 작성자인지 체크
     public ArticleUpdateResponse updateArticle(Long articleId, ArticleUpdateRequest articleUpdateRequest){
         // 게시글 존재 여부 확인
-        Article foundArticle = articleRepository.findById(articleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Article", articleId));
+        Article foundArticle = getArticle(articleId);
 
         User userByEmail = userVerifier.verifyUserAndPassword(articleUpdateRequest.getEmail(), articleUpdateRequest.getPassword());
 
@@ -59,5 +57,23 @@ public class ArticleService {
 
     }
 
+    public void deleteArticle(Long articleId, ArticleDeleteRequest articleDeleteRequest){
+        Article foundArticle = getArticle(articleId);
+        User userByEmail = userVerifier.verifyUserAndPassword(articleDeleteRequest.getEmail(), articleDeleteRequest.getPassword());
 
+        if (!foundArticle.getUser().getId().equals(userByEmail.getId())){
+            throw new UnauthorizedAccessException("자신의 게시글만 삭제할 수 있습니다.");
+        }
+
+        // 게시글뿐만 아니라, 게시글의 댓글들까지 삭제해야 합니다.
+        foundArticle.deleteCommentsIfExist(commentRepository);
+
+        // 게시글 삭제
+        articleRepository.deleteById(articleId);
+    }
+
+    private Article getArticle(Long articleId){
+        return articleRepository.findById(articleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Article", articleId));
+    }
 }

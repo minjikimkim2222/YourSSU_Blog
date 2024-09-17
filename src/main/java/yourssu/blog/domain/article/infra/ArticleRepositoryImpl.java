@@ -28,4 +28,8 @@ public class ArticleRepositoryImpl implements ArticleRepository {
         return articleJpaRepository.findById(id)
                 .map(articleEntity -> ArticleConverter.toArticle(articleEntity));
     }
+    @Override
+    public void deleteById(Long id) {
+        articleJpaRepository.deleteById(id);
+    }
 }

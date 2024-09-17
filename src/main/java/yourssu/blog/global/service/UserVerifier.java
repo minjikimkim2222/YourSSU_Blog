@@ -1,6 +1,7 @@
 package yourssu.blog.global.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import yourssu.blog.domain.user.model.User;
