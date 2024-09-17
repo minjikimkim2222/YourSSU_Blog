@@ -8,7 +8,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import yourssu.blog.global.exception.ResourceNotFoundException;
+import yourssu.blog.global.exception.UnauthorizedAccessException;
 import yourssu.blog.global.handler.ErrorResponse;
+
+import java.nio.file.AccessDeniedException;
 
 /*
     예외 전역 처리기
@@ -28,7 +31,7 @@ public class GlobalExceptionHandler {
         return new ErrorResponse("CONFLICT", ex.getMessage(), request.getRequestURI());
     }
 
-    // @Valid에서 검증 실패하면, 발생하는 에러 + 인자를 잘못 넘긴 경우
+    // @Valid에서 검증 실패하면, 발생하는 에러
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException ex, HttpServletRequest request){
@@ -37,6 +40,7 @@ public class GlobalExceptionHandler {
         return new ErrorResponse("METHOD_ARGUMENT_NOT_VALID", "입력값이 잘못되었습니다.",  request.getRequestURI());
     }
 
+    // 인자를 잘못 넘긴 경우 (일반적으로 입력값의 유효성 검사할 때)
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleIllegalArgumentExceptionException(IllegalArgumentException ex, HttpServletRequest request){
@@ -52,6 +56,15 @@ public class GlobalExceptionHandler {
         log.error("[exceptionHandler] Exception :: ", ex);
 
         return new ErrorResponse("NOT_FOUND", ex.getMessage(), request.getRequestURI());
+    }
+
+    // 유저가 해당 리소스에 접근할 권한 없음을 처리하는 예외
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleUnauthorizedAccessException(UnauthorizedAccessException ex, HttpServletRequest request){
+        log.error("[exceptionHandler] Exception :: ", ex);
+
+        return new ErrorResponse("FORBIDDEN", ex.getMessage(), request.getRequestURI());
     }
 
     // 마지막으로, 실수로 놓친 예외들은 여기서 공통으로 500에러로 처리됨

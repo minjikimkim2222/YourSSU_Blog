@@ -9,6 +9,8 @@ import yourssu.blog.domain.article.jpa.ArticleJpaRepository;
 import yourssu.blog.domain.article.model.Article;
 import yourssu.blog.domain.article.service.port.ArticleRepository;
 
+import java.util.Optional;
+
 @Repository
 @RequiredArgsConstructor
 public class ArticleRepositoryImpl implements ArticleRepository {
@@ -19,5 +21,11 @@ public class ArticleRepositoryImpl implements ArticleRepository {
         ArticleEntity articleEntity = articleJpaRepository.save(ArticleConverter.toEntity(article));
 
         return ArticleConverter.toArticle(articleEntity);
+    }
+
+    @Override
+    public Optional<Article> findById(Long id) {
+        return articleJpaRepository.findById(id)
+                .map(articleEntity -> ArticleConverter.toArticle(articleEntity));
     }
 }
