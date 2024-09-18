@@ -11,11 +11,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import yourssu.blog.domain.article.controller.dto.ArticleCreateRequest;
 import yourssu.blog.domain.article.controller.dto.ArticleCreateResponse;
+import yourssu.blog.domain.article.controller.dto.ArticleUpdateRequest;
+import yourssu.blog.domain.article.controller.dto.ArticleUpdateResponse;
 import yourssu.blog.domain.article.model.Article;
 import yourssu.blog.domain.article.service.port.ArticleRepository;
 import yourssu.blog.domain.user.model.User;
 import yourssu.blog.domain.user.service.port.UserRepository;
 import yourssu.blog.global.exception.ResourceNotFoundException;
+import yourssu.blog.global.exception.UnauthorizedAccessException;
+import yourssu.blog.global.service.UserVerifier;
 
 import java.util.Optional;
 
@@ -28,8 +32,8 @@ class ArticleServiceTest {
     private ArticleRepository articleRepository;
     @Mock
     private UserRepository userRepository;
-    @Spy
-    private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    @Mock
+    private UserVerifier userVerifier;
     @InjectMocks
     private ArticleService articleService;
 
@@ -39,76 +43,84 @@ class ArticleServiceTest {
         // given
         final String email = "user@exist.com";
         final User user = new User(1L, email, "pw", "username");
-        final ArticleCreateRequest articleCreateRequest = new ArticleCreateRequest(email, "pw", "title", "content");
+        final ArticleCreateRequest request = new ArticleCreateRequest(email, "pw", "title", "content");
         final Article savedArticle = Article.builder()
                 .id(1L)
-                .content(articleCreateRequest.getContent())
-                .title(articleCreateRequest.getTitle())
+                .content(request.getContent())
+                .title(request.getTitle())
                 .user(user)
                 .build();
 
 
-        // 유저가 존재하는 경우 - 미리 세팅한 user 반환
-        doReturn(Optional.of(user)).when(userRepository).findByEmail(articleCreateRequest.getEmail());
+        // 유저가 검증 후, 지정한 user 반환하도록
+        doReturn(user).when(userVerifier).verifyUserAndPassword(request.getEmail(), request.getPassword());
+
         // 지정된 savedArticle 반환하도록
         doReturn(savedArticle).when(articleRepository).save(any(Article.class));
 
         // when
-        final ArticleCreateResponse articleCreateResponse = articleService.createArticle(articleCreateRequest);
+        final ArticleCreateResponse response = articleService.createArticle(request);
 
 
         // then
-        assertThat(articleCreateResponse.getEmail()).isEqualTo(articleCreateRequest.getEmail());
-        assertThat(articleCreateResponse.getTitle()).isEqualTo(articleCreateRequest.getTitle());
-        assertThat(articleCreateResponse.getContent()).isEqualTo(articleCreateRequest.getContent());
+        assertThat(response.getEmail()).isEqualTo(request.getEmail());
+        assertThat(response.getTitle()).isEqualTo(request.getTitle());
+        assertThat(response.getContent()).isEqualTo(request.getContent());
 
         // verify
-        verify(userRepository, times(1)).findByEmail(articleCreateRequest.getEmail());
+        verify(userVerifier, times(1)).verifyUserAndPassword(anyString(), anyString());
         verify(articleRepository, times(1)).save(any(Article.class));
     }
-    @Test
-    @DisplayName("유저가 존재하지 않을 때, 예외 발생 테스트")
-    public void UserNotFound() throws Exception {
-        // given
-        final String email = "no@user.com";
-        ArticleCreateRequest articleCreateRequest = new ArticleCreateRequest(email, "pw", "title", "name");
 
-        // 유저가 존재하지 않을 경우
-        doReturn(Optional.empty()).when(userRepository).findByEmail(email);
+
+    @Test
+    @DisplayName("게시글 수정 성공 테스트")
+    public void updateArticle() throws Exception {
+        // given
+        final Long articleId = 1L;
+        final String userEmail = "email1";
+        final String userPw = "pw1";
+        final User user = new User(1L, userEmail, userPw, "name1");
+
+        final ArticleUpdateRequest request =
+                new ArticleUpdateRequest(userEmail, userPw, "new-title", "new-content");
+        final Article foundArticle = new Article(articleId, "old-content", "old-title", user);
+
+        doReturn(Optional.of(foundArticle)).when(articleRepository).findById(articleId);
+        doReturn(user).when(userVerifier).verifyUserAndPassword(request.getEmail(), request.getPassword());
 
         // when
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
-            articleService.createArticle(articleCreateRequest);
-        });
+        ArticleUpdateResponse response = articleService.updateArticle(articleId, request);
 
         // then
-        assertThat(exception.getMessage()).isEqualTo("해당 email을 가진 User가 존재하지 않습니다.");
-
-        // verify
-        verify(userRepository, times(1)).findByEmail(any(String.class));
-        verify(articleRepository, never()).save(any(Article.class));
+        assertThat(request.getTitle()).isEqualTo(response.getTitle());
+        assertThat(request.getContent()).isEqualTo(response.getContent());
+        assertThat(request.getEmail()).isEqualTo(request.getEmail());
     }
 
     @Test
-    @DisplayName("유저가 존재하지만 비밀번호가 다를 때, 예외 발생 테스트")
-    public void UserExistButDifferentPW() throws Exception {
+    @DisplayName("자신의 게시글이 아닌 글을 수정할 때, 예외가 발생하는지 테스트")
+    public void isThrowExceptionWhenUpdateOtherArticle() throws Exception {
         // given
-        final String email = "user1@exam.com";
-        final User user = new User(1L, email, "pw1", "name1");
+        final User articleWriter = new User(1L, "email1", "pw1", "name1");
+        final User noWriter = new User(2L, "email2", "pw2", "name2");
 
-        // 기존 유저와 다른 비밀번호로 request를 보냄
-        final ArticleCreateRequest request = new ArticleCreateRequest(email, "diffentPW", "title", "content");
+        // 이미 존재하는 게시글은, articleWriter에 의해 쓰였다.
+        final Article foundArticle = new Article(1L, "content1", "title1", articleWriter);
 
-        doReturn(Optional.of(user)).when(userRepository).findByEmail(email);
-        doReturn(false).when(passwordEncoder).matches(request.getPassword(), user.getPassword());
+        // 요청을 보낼 때, foundArticle을 쓴 유저가 아닌 다른 유저정보를 보냈다 (noWriter)
+        final ArticleUpdateRequest request =
+                new ArticleUpdateRequest(noWriter.getEmail(), noWriter.getPassword(), "new-title", "new-content");
+
+        doReturn(Optional.of(foundArticle)).when(articleRepository).findById(1L);
+        doReturn(noWriter).when(userVerifier).verifyUserAndPassword(request.getEmail(), request.getPassword());
 
         // when
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            articleService.createArticle(request);
+        UnauthorizedAccessException exception = assertThrows(UnauthorizedAccessException.class, () -> {
+            articleService.updateArticle(1L, request);
         });
 
         // then
-        assertThat(exception.getMessage()).isEqualTo("비밀번호가 일치하지 않습니다.");
-
+        assertThat(exception.getMessage()).isEqualTo("자신의 게시글만 수정할 수 있습니다.");
     }
 }
