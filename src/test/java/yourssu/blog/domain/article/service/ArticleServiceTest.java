@@ -137,9 +137,9 @@ class ArticleServiceTest {
         final ArticleDeleteRequest request = new ArticleDeleteRequest(user.getEmail(), user.getPassword());
 
         // 댓글 데이터 설정
-        Comment comment1 = new Comment(1L, "comment1", foundArticle, user);
-        Comment comment2 = new Comment(2L, "comment2", foundArticle, user);
-        List<Comment> comments = Arrays.asList(comment1, comment2);
+        final Comment comment1 = new Comment(1L, "comment1", foundArticle, user);
+        final Comment comment2 = new Comment(2L, "comment2", foundArticle, user);
+        final List<Comment> comments = Arrays.asList(comment1, comment2);
 
         doReturn(Optional.of(foundArticle)).when(articleRepository).findById(articleId);
         doReturn(user).when(userVerifier).verifyUserAndPassword(request.getEmail(), request.getPassword());

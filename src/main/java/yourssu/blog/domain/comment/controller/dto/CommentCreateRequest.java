@@ -1,12 +1,14 @@
 package yourssu.blog.domain.comment.controller.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /*
     content 필드는 빈 문자열이나 NULL값 허용하지 않는다.
  */
 @Data
+@AllArgsConstructor
 public class CommentCreateRequest {
     private String email;
     private String password;
