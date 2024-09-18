@@ -129,7 +129,7 @@ class ArticleServiceTest {
 
     @Test
     @DisplayName("게시글 삭제 성공 테스트, 해당 게시글의 댓글들까지 삭제되는지 테스트")
-    public void deleteArticle() throws Exception {
+    public void deleteArticleAndRelatedArticle() throws Exception {
         // given
         final Long articleId = 1L;
         final User user = new User(1L, "email1", "pw1", "name1");
