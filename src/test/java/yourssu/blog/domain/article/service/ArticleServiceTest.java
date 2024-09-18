@@ -9,18 +9,19 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import yourssu.blog.domain.article.controller.dto.ArticleCreateRequest;
-import yourssu.blog.domain.article.controller.dto.ArticleCreateResponse;
-import yourssu.blog.domain.article.controller.dto.ArticleUpdateRequest;
-import yourssu.blog.domain.article.controller.dto.ArticleUpdateResponse;
+import yourssu.blog.domain.article.controller.dto.*;
 import yourssu.blog.domain.article.model.Article;
 import yourssu.blog.domain.article.service.port.ArticleRepository;
+import yourssu.blog.domain.comment.model.Comment;
+import yourssu.blog.domain.comment.service.port.CommentRepository;
 import yourssu.blog.domain.user.model.User;
 import yourssu.blog.domain.user.service.port.UserRepository;
 import yourssu.blog.global.exception.ResourceNotFoundException;
 import yourssu.blog.global.exception.UnauthorizedAccessException;
 import yourssu.blog.global.service.UserVerifier;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,6 +35,8 @@ class ArticleServiceTest {
     private UserRepository userRepository;
     @Mock
     private UserVerifier userVerifier;
+    @Mock
+    private CommentRepository commentRepository;
     @InjectMocks
     private ArticleService articleService;
 
@@ -123,4 +126,33 @@ class ArticleServiceTest {
         // then
         assertThat(exception.getMessage()).isEqualTo("자신의 게시글만 수정할 수 있습니다.");
     }
+
+    @Test
+    @DisplayName("게시글 삭제 성공 테스트, 해당 게시글의 댓글들까지 삭제되는지 테스트")
+    public void deleteArticle() throws Exception {
+        // given
+        final Long articleId = 1L;
+        final User user = new User(1L, "email1", "pw1", "name1");
+        final Article foundArticle = new Article(articleId, "content1", "title1", user);
+        final ArticleDeleteRequest request = new ArticleDeleteRequest(user.getEmail(), user.getPassword());
+
+        // 댓글 데이터 설정
+        Comment comment1 = new Comment(1L, "comment1", foundArticle, user);
+        Comment comment2 = new Comment(2L, "comment2", foundArticle, user);
+        List<Comment> comments = Arrays.asList(comment1, comment2);
+
+        doReturn(Optional.of(foundArticle)).when(articleRepository).findById(articleId);
+        doReturn(user).when(userVerifier).verifyUserAndPassword(request.getEmail(), request.getPassword());
+        doReturn(comments).when(commentRepository).findByArticleId(articleId);
+
+        // when
+        articleService.deleteArticle(articleId, request);
+
+        // then -- 함수 호출 횟수 검증 !!
+        verify(articleRepository, times(1)).deleteById(articleId);
+        verify(commentRepository, times(1)).findByArticleId(articleId);
+        verify(commentRepository, times(2)).delete(any(Comment.class));
+
+    }
+
 }
