@@ -1,5 +1,7 @@
 # spring.application.name=blog
 spring:
+  config:
+    import: application-secret.yml
   application:
     name: blog
 
